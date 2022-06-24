@@ -9,6 +9,11 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
 	  <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
 	  <NoWarn>$(NoWarn);NU1605</NoWarn>
+    <PackageLicenseFile></PackageLicenseFile>
+		<PackageProjectUrl>https://github.com/fabrimaciel/webprintmanager</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/fabrimaciel/webprintmanager</RepositoryUrl>
+		<NeutralLanguage>English</NeutralLanguage>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   
   <ItemGroup>
