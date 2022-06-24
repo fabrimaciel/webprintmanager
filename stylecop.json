@@ -1,0 +1,53 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "companyName": "Colosoft",
+      "documentationCulture": "pt-BR",
+      "copyrightText": "Copyright (c) {companyName}. Todos os direitos reservados.",
+      "documentInterfaces": true,
+      "documentInternalElements": false
+      
+    },
+    "indentation": {
+      "indentationSize": 4,
+      "useTabs": false
+    },
+    "maintainabilityRules": {
+      "topLevelTypes": [
+        "class",
+        "enum",
+        "interface",
+        "struct"
+      ]
+    },
+    "orderingRules": {
+      "elementOrder": [
+        "kind",
+        "constant",
+        "static",
+        "readonly"
+      ],
+      "usingDirectivesPlacement": "preserve",
+      "systemUsingDirectivesFirst": false,
+      "blankLinesBetweenUsingGroups": "omit"
+    },
+    "layoutRules": {
+      "allowConsecutiveUsings": true
+    },
+    "namingRules": {
+      "allowCommonHungarianPrefixes": true,
+      "allowedHungarianPrefixes": [
+        "x",
+        "y",
+		"z",
+		"m",
+		"lw",
+		"ip",
+		"db",
+		"id",
+		"qr"
+      ]
+    }
+  }
+}

@@ -1,0 +1,59 @@
+﻿@page "/"
+@inject PrintManager PrintManager
+
+<PageTitle>WebPrintManager</PageTitle>
+
+<EditForm Model="model">
+    <InputSelect @bind-Value="model.PrinterName" class="form-control form-control-sm">
+        @foreach (var p in this.Printers)
+        {
+            <option value="@p">@p</option>
+        }
+    </InputSelect>
+</EditForm>
+
+<div>
+    <button class="btn btn-primary" @onclick="this.GetPrinters">Get Printers</button>
+</div>
+<div>
+    <button class="btn btn-primary" @onclick="this.PrintEpsonTest">Print Epson Esc/POS Test</button>
+</div>
+
+@code {
+    private Model model = new Model();
+
+    class Model
+    {
+        public string? PrinterName { get; set; }
+    }
+
+    public IEnumerable<string> Printers { get; set; } = Enumerable.Empty<string>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        this.PrintManager.ConnectionChanged += (_, _) =>
+        {
+            this.InvokeAsync(this.GetPrinters);
+        };
+    }
+
+    private async Task GetPrinters()
+    {
+        this.Printers = await this.PrintManager.GetPrinters(default);
+        this.StateHasChanged();
+    }
+
+    private async Task PrintEpsonTest()
+    {
+        if (!string.IsNullOrEmpty(this.model.PrinterName))
+        {
+            var escPos = new WebPrintManager.Epson.EscPosPrinter(this.PrintManager, this.model.PrinterName!, System.Text.Encoding.Default);
+            await escPos.TestPrinter(default);
+            escPos.FullPaperCut();
+            await escPos.PrintDocument(default);
+        }
+    }
+}
+

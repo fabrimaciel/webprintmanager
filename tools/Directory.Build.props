@@ -1,0 +1,47 @@
+﻿<Project>
+     
+  <PropertyGroup>
+    <Product>WebPrintManager</Product>
+    <Authors>Fabrício Maciel Sales</Authors>
+    <Company>Colosoft</Company>
+    <Copyright>Copyright 2022</Copyright>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+	  <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
+	  <NoWarn>$(NoWarn);NU1605</NoWarn>
+  </PropertyGroup>
+  
+  <ItemGroup>
+	  <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.0-beta009">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+	<PackageReference Include="MinVer" Version="2.5.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)*.ruleset" Link="%(Filename)%(Extension)" />
+    <None Include="$(AppDesignerFolder)\launchSettings.json" Condition="Exists('$(AppDesignerFolder)\launchSettings.json')" />
+  </ItemGroup>
+  
+  <PropertyGroup>
+	  <CodeAnalysisRuleSetLocation Condition="$(CodeAnalysisRuleSetLocation) == ''">$(MSBuildThisFileDirectory)\..\</CodeAnalysisRuleSetLocation>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+      <CodeAnalysisRuleSet>$(CodeAnalysisRuleSetLocation)\stylecop.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <AdditionalFiles Condition="Exists('$(CodeAnalysisRuleSetLocation)\stylecop.json')" Include="$(CodeAnalysisRuleSetLocation)\stylecop.json" Link="stylecop.json" />
+  </ItemGroup>
+  
+  
+</Project>
