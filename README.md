@@ -21,3 +21,31 @@ By writing pure .NET C# code, **WebPrintManager** allows you to _easily send raw
 
 ### Raw Data Printing
 Send any raw data & commands supported by the client printer like EPSON ESC/POS!
+
+## Installing and Managing the Agent Windows Service
+
+After building the application, the new Windows Service can be published using dotnet publish
+
+````
+dotnet publish .\src\WebPrintManager.Agent\WebPrintManager.Agent.csproj -c Release -oc:\webprintmanageragent
+````
+
+To control Windows Services, the sc command can be used. Creating a new Windows Service is done using sc create passing the name of the service and the binPath parameter referencing the executable. This command requires administrator rights:
+
+````
+sc create "WebPrintManager Agent" binPath= c:\webprintmanageragent\WebPrintManager.Agent.exe start= auto
+````
+
+The status of the service can be queried using the Services MMC, or with the command line sc query:
+
+````
+sc query "WebPrintManager Agent"
+````
+
+After the service is created, it is stopped and need to be started:
+
+````
+sc start "WebPrintManager Agent"
+````
+
+To stop and delete the service, the sc stop and sc delete commands can be used.

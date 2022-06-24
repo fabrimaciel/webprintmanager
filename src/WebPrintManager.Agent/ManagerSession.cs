@@ -7,10 +7,42 @@ namespace WebPrintManager.Agent
     {
         private readonly JsonSerializerOptions jsonSerializerSettings = new JsonSerializerOptions();
         private readonly IDictionary<Messages.MessageType, IReceivedMessageCallback> callbacks = new Dictionary<Messages.MessageType, IReceivedMessageCallback>();
+        private readonly ManagerServerOptions options;
 
-        public ManagerSession(WsServer server)
+        public ManagerSession(WsServer server, ManagerServerOptions options)
             : base(server)
         {
+            this.options = options;
+        }
+
+        private string? GetHeaderOrigin(HttpRequest request)
+        {
+            for (var i = 0; i < request.Headers; i++)
+            {
+                (var headerName, var headerValue) = request.Header(i);
+
+                if (StringComparer.InvariantCultureIgnoreCase.Equals(headerName, "Origin"))
+                {
+                    return headerValue;
+                }
+            }
+
+            return null;
+        }
+
+        protected override void OnReceivedRequest(HttpRequest request)
+        {
+            if (this.options.AuthorizedSites != null && this.options.AuthorizedSites.Any())
+            {
+                var origin = this.GetHeaderOrigin(request);
+
+                if (!this.options.AuthorizedSites.Contains(origin, StringComparer.InvariantCultureIgnoreCase))
+                {
+                    this.Disconnect();
+                }
+            }
+
+            base.OnReceivedRequest(request);
         }
 
         public DateTime ReferenceDate { get; set; } = DateTime.Now;
