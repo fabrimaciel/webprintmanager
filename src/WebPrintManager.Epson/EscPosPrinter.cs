@@ -1,25 +1,22 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using WebPrintManager.Epson.Commands;
 
 namespace WebPrintManager.Epson
 {
     public class EscPosPrinter : IEscPosPrinter
     {
-        private readonly PrintManager printManager;
         private readonly Encoding encoding;
-        private readonly string printerName;
         private readonly IPrintCommand command;
-        private byte[]? buffer;
+        private byte[] buffer;
 
-        public EscPosPrinter(
-            PrintManager printManager,
-            string printerName,
-            Encoding encoding)
+        public EscPosPrinter(Encoding encoding)
         {
-            this.printManager = printManager ?? throw new ArgumentNullException(nameof(printManager));
             this.encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
-            this.printerName = string.IsNullOrEmpty(printerName) ? "escpos.prn" : printerName.Trim();
             this.command = new EscPos();
         }
 
@@ -47,14 +44,19 @@ namespace WebPrintManager.Epson
             }
         }
 
-        public async Task PrintDocument(CancellationToken cancellationToken)
+        public Task PrintDocument(System.IO.Stream outputStream, CancellationToken cancellationToken)
         {
-            if (this.buffer == null)
+            if (outputStream is null)
             {
-                return;
+                throw new ArgumentNullException(nameof(outputStream));
             }
 
-            await this.printManager.RawPrint(this.printerName, this.buffer, cancellationToken);
+            if (this.buffer == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            return outputStream.WriteAsync(this.buffer, 0, this.buffer.Length, cancellationToken);
         }
 
         public void Append(string value)
@@ -135,8 +137,13 @@ namespace WebPrintManager.Epson
             this.Append(this.command.AutoTest());
         }
 
-        public async Task TestPrinter(CancellationToken cancellationToken)
+        public async Task TestPrinter(System.IO.Stream outputStream, CancellationToken cancellationToken)
         {
+            if (outputStream is null)
+            {
+                throw new ArgumentNullException(nameof(outputStream));
+            }
+
             this.Append("NORMAL - 48 COLUMNS");
             this.Append("1...5...10...15...20...25...30...35...40...45.48");
             this.Separator();
@@ -176,7 +183,9 @@ namespace WebPrintManager.Epson
             this.Font("Font Special A", Fonts.SpecialFontA);
             this.Font("Font Special B", Fonts.SpecialFontB);
             this.Separator();
-            await this.InitializePrint(cancellationToken);
+            await outputStream.WriteAsync(this.buffer, 0, this.buffer.Length, cancellationToken);
+            await this.InitializePrint(outputStream, cancellationToken);
+            this.Clear();
             this.SetLineHeight(24);
             this.Append("This is first line with line height of 30 dots");
             this.SetLineHeight(40);
@@ -185,6 +194,7 @@ namespace WebPrintManager.Epson
             this.NewLines(3);
             this.Append("End of Test :)");
             this.Separator();
+            await outputStream.WriteAsync(this.buffer, 0, this.buffer.Length, cancellationToken);
         }
 
         public void BoldMode(string value)
@@ -302,9 +312,15 @@ namespace WebPrintManager.Epson
             this.Append(this.command.BarCode.Ean13(code, positions));
         }
 
-        public Task InitializePrint(CancellationToken cancellationToken)
+        public Task InitializePrint(System.IO.Stream outputStream, CancellationToken cancellationToken)
         {
-            return this.printManager.RawPrint(this.printerName, this.command.InitializePrint.Initialize(), cancellationToken);
+            if (outputStream is null)
+            {
+                throw new ArgumentNullException(nameof(outputStream));
+            }
+
+            var content = this.command.InitializePrint.Initialize();
+            return outputStream.WriteAsync(content, 0, content.Length, cancellationToken);
         }
 
         public void Image(Bitmap image)

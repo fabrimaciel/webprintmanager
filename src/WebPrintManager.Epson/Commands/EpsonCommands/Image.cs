@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Drawing;
 
 namespace WebPrintManager.Epson.Commands
@@ -41,12 +42,12 @@ namespace WebPrintManager.Epson.Commands
         byte[] IImage.Print(Bitmap image)
         {
             var data = GetBitmapData(image);
-            var dots = data.Dots !;
+            var dots = data.Dots;
             var width = BitConverter.GetBytes(data.Width);
 
             int offset = 0;
-            MemoryStream stream = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(stream);
+            var stream = new System.IO.MemoryStream();
+            var bw = new System.IO.BinaryWriter(stream);
 
             bw.Write((char)0x1B);
             bw.Write('@');

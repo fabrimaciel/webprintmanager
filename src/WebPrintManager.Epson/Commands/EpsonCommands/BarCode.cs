@@ -1,4 +1,6 @@
-﻿namespace WebPrintManager.Epson.Commands
+﻿using System;
+
+namespace WebPrintManager.Epson.Commands
 {
     public class BarCode : IBarCode
     {

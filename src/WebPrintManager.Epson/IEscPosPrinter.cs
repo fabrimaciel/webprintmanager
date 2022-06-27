@@ -1,8 +1,10 @@
 ﻿using System.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace WebPrintManager.Epson
 {
-    internal interface IEscPosPrinter
+    public interface IEscPosPrinter
     {
         int ColsNomal { get; }
 
@@ -10,7 +12,7 @@ namespace WebPrintManager.Epson
 
         int ColsExpanded { get; }
 
-        Task PrintDocument(CancellationToken cancellationToken);
+        Task PrintDocument(System.IO.Stream outputStream, CancellationToken cancellationToken);
 
         void Append(string value);
 
@@ -28,7 +30,7 @@ namespace WebPrintManager.Epson
 
         void AutoTest();
 
-        Task TestPrinter(CancellationToken cancellationToken);
+        Task TestPrinter(System.IO.Stream outputStream, CancellationToken cancellationToken);
 
         void Font(string value, Fonts state);
 
@@ -82,6 +84,6 @@ namespace WebPrintManager.Epson
 
         void Ean13(string code, Positions positions);
 
-        Task InitializePrint(CancellationToken cancellationToken);
+        Task InitializePrint(System.IO.Stream outputStream, CancellationToken cancellationToken);
     }
 }
