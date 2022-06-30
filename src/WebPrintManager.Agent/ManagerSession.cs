@@ -63,14 +63,14 @@ namespace WebPrintManager.Agent
             return tag;
         }
 
-        public string? SendJson(object json, string type, string? tag, bool longTag)
+        public string? SendJson(object? json, string type, string? tag, bool longTag)
         {
             if (tag == null)
             {
                 tag = this.GenerateMessageTag(longTag);
             }
 
-            var jsonText = JsonSerializer.Serialize(json, this.jsonSerializerSettings);
+            var jsonText = json != null ? JsonSerializer.Serialize(json, this.jsonSerializerSettings) : null;
             if (this.SendTextAsync($"{tag},{type},{jsonText}"))
             {
                 return tag;
@@ -131,6 +131,16 @@ namespace WebPrintManager.Agent
             if (this.callbacks.TryGetValue(type, out var callback))
             {
                 callback.Execute(tag, buffer, (int)offset, (int)size);
+            }
+        }
+
+        protected override void Dispose(bool disposingManagedResources)
+        {
+            base.Dispose(disposingManagedResources);
+
+            foreach (var callback in this.callbacks.Select(f => f.Value).OfType<IDisposable>())
+            {
+                callback.Dispose();
             }
         }
     }

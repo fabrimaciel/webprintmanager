@@ -17,10 +17,29 @@ printManager.ConnectionChanged += (sender, e) =>
 
             if (printer != null)
             {
-                var escPos = new WebPrintManager.Epson.EscPosPrinter(printManager, printer, System.Text.Encoding.Default);
-                await escPos.TestPrinter(default);
-                escPos.FullPaperCut();
-                await escPos.PrintDocument(default);
+                var escPos = new WebPrintManager.Epson.EscPosPrinter(System.Text.Encoding.Default);
+                using (var outputStream = new MemoryStream())
+                {
+                    await escPos.TestPrinter(outputStream, default);
+                    escPos.FullPaperCut();
+                    await escPos.PrintDocument(outputStream, default);
+
+                    var installedPrinter = new InstalledPrinter(printer);
+
+                    var info = await printManager.GetPrinter(installedPrinter, default);
+                    await printManager.Purge(installedPrinter, default);
+
+                    var job = await printManager.RawPrint(
+                        installedPrinter,
+                        new PrintDocumentInfo
+                        {
+                            Name = "Test",
+                        },
+                        outputStream.ToArray(),
+                        default);
+
+                    await job.Refresh(default);
+                }
             }
         });
     }

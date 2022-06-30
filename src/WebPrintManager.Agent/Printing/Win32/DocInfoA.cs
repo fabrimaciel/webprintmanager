@@ -1,9 +1,9 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace WebPrintManager.Agent.Printing
+namespace WebPrintManager.Agent.Printing.Win32
 {
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi)]
-    public class DocInfoA
+    internal class DocInfoA
     {
 #pragma warning disable
         [MarshalAs(UnmanagedType.LPStr)]

@@ -6,5 +6,10 @@
         Connection,
         PrintersList,
         RawPrint,
+        PrintJobStatus,
+        GetPrintJobInfo,
+        CancelJob,
+        PrinterInfo,
+        PrinterPurge,
     }
 }

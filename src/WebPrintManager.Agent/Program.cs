@@ -12,7 +12,11 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((builder, services) =>
     {
         services.Configure<ManagerServerOptions>(builder.Configuration.GetSection(ManagerServerOptions.ManagerServer));
-        services.AddScoped<ManagerServer>();
+        services
+            .AddScoped<ManagerServer>()
+            .AddSingleton<WebPrintManager.Agent.Printing.PrintMonitor>()
+            .AddScoped<WebPrintManager.Agent.Printing.ClientPrinterFactory>();
+
         services.AddHostedService<Worker>();
 
         if (OperatingSystem.IsWindows())

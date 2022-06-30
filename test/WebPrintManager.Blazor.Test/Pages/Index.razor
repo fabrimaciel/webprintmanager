@@ -12,11 +12,19 @@
     </InputSelect>
 </EditForm>
 
+@if (this.Job != null)
+{
+    <h1>Job Status: @this.Job.Status.ToString()</h1>
+}
+
 <div>
     <button class="btn btn-primary" @onclick="this.GetPrinters">Get Printers</button>
 </div>
 <div>
     <button class="btn btn-primary" @onclick="this.PrintEpsonTest">Print Epson Esc/POS Test</button>
+</div>
+<div>
+    <button class="btn btn-primary" @onclick="this.Purge">Purge</button>
 </div>
 
 @code {
@@ -26,6 +34,8 @@
     {
         public string? PrinterName { get; set; }
     }
+
+    public ClientPrintJob? Job { get; set; }
 
     public IEnumerable<string> Printers { get; set; } = Enumerable.Empty<string>();
 
@@ -45,14 +55,41 @@
         this.StateHasChanged();
     }
 
+    private async Task Purge()
+    {
+        await this.PrintManager.Purge(new InstalledPrinter(this.model.PrinterName!), default);
+    }
+
     private async Task PrintEpsonTest()
     {
         if (!string.IsNullOrEmpty(this.model.PrinterName))
         {
-            var escPos = new WebPrintManager.Epson.EscPosPrinter(this.PrintManager, this.model.PrinterName!, System.Text.Encoding.Default);
-            await escPos.TestPrinter(default);
-            escPos.FullPaperCut();
-            await escPos.PrintDocument(default);
+            var escPos = new WebPrintManager.Epson.EscPosPrinter(System.Text.Encoding.Default);
+
+            using (var outputStream = new MemoryStream())
+            {
+                await escPos.TestPrinter(outputStream, default);
+                escPos.FullPaperCut();
+                await escPos.PrintDocument(outputStream, default);
+
+                outputStream.Flush();
+
+                this.Job = await this.PrintManager.RawPrint(
+                    new InstalledPrinter(this.model.PrinterName!),
+                    new PrintDocumentInfo
+                        {
+                            Name = "TestBlazor",
+                        },
+                    outputStream.ToArray(),
+                    default);
+
+                this.Job.PropertyChanged += (_, _) =>
+                {
+                    this.StateHasChanged();
+                };
+
+                this.StateHasChanged();
+            }
         }
     }
 }

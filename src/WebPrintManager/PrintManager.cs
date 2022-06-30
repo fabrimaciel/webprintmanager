@@ -7,12 +7,15 @@
 
         public event EventHandler? ConnectionChanged;
 
+        internal event EventHandler<PrintJobStatusChangedEventArgs>? PrintJobStatusChanged;
+
         public PrintManager()
         {
             this.connection = new PrintManagerConnection();
             this.connection.ReceivedMessage += this.ConnectionReceivedMessage;
             this.connection.WsClosed += this.ConnectionWsClosed;
             this.ConfigureCallback<Messages.ConnectionMessage>(Messages.MessageType.Connection, this.OnConnection);
+            this.ConfigureCallback<Messages.PrintJobStatusMessage>(Messages.MessageType.PrintJobStatus, this.OnPrintJobStatusChanged);
         }
 
         public bool IsConnected { get; private set; }
@@ -70,28 +73,116 @@
             this.ConnectionChanged?.Invoke(this, EventArgs.Empty);
         }
 
+        private void OnPrintJobStatusChanged(Messages.PrintJobStatusMessage message)
+        {
+            this.PrintJobStatusChanged?.Invoke(this, new PrintJobStatusChangedEventArgs(message.JobId, message.Status));
+        }
+
         public Task Start(string host, int port)
         {
             return this.connection.Connect(host, port);
         }
 
-        public Task<IEnumerable<string>> GetPrinters(CancellationToken cancellationToken) =>
-            this.Execute<IEnumerable<string>>(Messages.MessageType.PrintersList, null, cancellationToken) !;
-
-        public async Task RawPrint(string printerName, byte[] data, CancellationToken cancellationToken)
+        internal Task<Messages.GetPrintJobInfoResult?> GetJobInfo(IClientPrinter printer, int jobId, CancellationToken cancellationToken)
         {
+            return this.Execute<Messages.GetPrintJobInfoResult>(
+                Messages.MessageType.GetPrintJobInfo,
+                new Messages.PrintJobMessage(printer, jobId),
+                cancellationToken);
+        }
+
+        internal async Task CancelJob(IClientPrinter printer, int jobId, CancellationToken cancellationToken)
+        {
+            (await this.Execute<Messages.GenericResult>(
+                Messages.MessageType.CancelJob,
+                new Messages.PrintJobMessage(printer, jobId),
+                cancellationToken))?.ThrowOnFail();
+        }
+
+        public Task<IEnumerable<string>> GetPrinters(CancellationToken cancellationToken)
+        {
+            return this.Execute<IEnumerable<string>>(Messages.MessageType.PrintersList, null, cancellationToken) !;
+        }
+
+        public async Task<ClientPrintJob> RawPrint(
+            IClientPrinter printer,
+            PrintDocumentInfo documentInfo,
+            byte[] data,
+            CancellationToken cancellationToken)
+        {
+            if (printer is null)
+            {
+                throw new ArgumentNullException(nameof(printer));
+            }
+
+            if (documentInfo is null)
+            {
+                throw new ArgumentNullException(nameof(documentInfo));
+            }
+
             var encoding = System.Text.Encoding.UTF8;
-            var body = new byte[encoding.GetByteCount(printerName) + 1 + data.Length];
+            var printerType = printer.GetType().Name;
+            var printerData = System.Text.Json.JsonSerializer.Serialize(printer, printer.GetType());
+            var documentInfoData = System.Text.Json.JsonSerializer.Serialize(documentInfo);
 
-            encoding.GetBytes(printerName, 0, printerName.Length, body, 0);
-            body[body.Length - data.Length - 1] = (byte)',';
-            Buffer.BlockCopy(data, 0, body, body.Length - data.Length, data.Length);
+            Messages.RawPrintResult result;
 
-            var result = (await this.ExecuteBinary<Messages.RawPrintResult>(Messages.MessageType.RawPrint, body, cancellationToken)) !;
+            using (var outputStream = new MemoryStream())
+            {
+                var writer = new BinaryWriter(outputStream, encoding);
+                writer.Write(printerType);
+                writer.Write(printerData);
+                writer.Write(documentInfoData);
+                writer.Write(data.Length);
+                writer.Write(data, 0, data.Length);
+                writer.Flush();
+                outputStream.Flush();
+
+                result = (await this.ExecuteBinary<Messages.RawPrintResult>(Messages.MessageType.RawPrint, outputStream.ToArray(), cancellationToken)) !;
+            }
 
             if (!result.Success)
             {
                 throw new InvalidOperationException(result.Error);
+            }
+
+            var info = await this.GetJobInfo(printer, result.JobId, cancellationToken);
+
+            if (info == null)
+            {
+                return new ClientPrintJob(
+                    new Messages.GetPrintJobInfoResult
+                    {
+                        JobId = result.JobId,
+                        Status = PrintJobStatus.Completed,
+                    },
+                    printer,
+                    this);
+            }
+
+            return new ClientPrintJob(info, printer, this);
+        }
+
+        public async Task<PrinterInfo> GetPrinter(IClientPrinter printer, CancellationToken cancellationToken)
+        {
+            var result = await this.Execute<Messages.GetPrinterInfoResult>(
+                Messages.MessageType.PrinterInfo,
+                new Messages.PrinterMessage(printer),
+                cancellationToken);
+
+            return new PrinterInfo(result);
+        }
+
+        public async Task Purge(IClientPrinter printer, CancellationToken cancellationToken)
+        {
+            var result = await this.Execute<Messages.GenericResult>(
+                Messages.MessageType.PrinterPurge,
+                new Messages.PrinterMessage(printer),
+                cancellationToken);
+
+            if (result != null && !result.Success)
+            {
+                throw new InvalidOperationException(result.Message);
             }
         }
 

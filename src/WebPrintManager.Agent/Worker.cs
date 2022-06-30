@@ -1,16 +1,16 @@
-﻿using Microsoft.Extensions.Options;
-
-namespace WebPrintManager.Agent
+﻿namespace WebPrintManager.Agent
 {
     internal class Worker : BackgroundService
     {
         private readonly ILogger<Worker> logger;
         private readonly ManagerServer server;
+        private readonly Printing.PrintMonitor printMonitor;
 
-        public Worker(ManagerServer server, ILogger<Worker> logger)
+        public Worker(ManagerServer server, Printing.PrintMonitor printMonitor, ILogger<Worker> logger)
         {
             this.server = server;
             this.logger = logger;
+            this.printMonitor = printMonitor;
         }
 
         public override Task StartAsync(CancellationToken cancellationToken)
@@ -38,7 +38,8 @@ namespace WebPrintManager.Agent
         public override void Dispose()
         {
             base.Dispose();
-            this.server?.Dispose();
+            this.server.Dispose();
+            this.printMonitor.Dispose();
         }
     }
 }
