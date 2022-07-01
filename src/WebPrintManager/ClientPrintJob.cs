@@ -72,11 +72,16 @@ namespace WebPrintManager
         public async Task Refresh(CancellationToken cancellationToken)
         {
             var info = await this.printManager.GetJobInfo(this.printer, this.JobId, cancellationToken);
-            var status1 = PrintJobStatus.Offline;
+            PrintJobStatus status1;
 
             if (info != null)
             {
                 this.jobInfo = info;
+                status1 = info.Status;
+            }
+            else
+            {
+                status1 = PrintJobStatus.Completed;
             }
 
             if (this.Status != status1)

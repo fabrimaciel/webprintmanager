@@ -8,6 +8,8 @@
   <a href="https://github.com/fabrimaciel/webprintmanager/issues">
     <img src="https://img.shields.io/github/issues/fabrimaciel/webprintmanager" />
   </a>
+  ![Nuget](https://img.shields.io/nuget/v/webprintmanager)
+  ![Nuget](https://img.shields.io/nuget/dt/webprintmanager)
 </p>
 
 
