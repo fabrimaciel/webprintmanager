@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - '*.*.*'
+jobs:
+  release:
+    runs-on: ubuntu-latest   
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup dotnet 6.0
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Clean
+        run: dotnet clean -c Release
+
+      - name: Build
+        run: dotnet build -c Release
+
+      - name: Pack WebPrintManager
+        run: dotnet pack src/WebPrintManager/WebPrintManager.csproj -c Release --no-build -o nuget-package
+        
+      - name: Pack WebPrintManager.Epson
+        run: dotnet pack src/WebPrintManager.Epson/WebPrintManager.Epson.csproj -c Release --no-build -o nuget-package
+
+      - name: Publish to Nuget.org
+        run: dotnet nuget push nuget-package/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json

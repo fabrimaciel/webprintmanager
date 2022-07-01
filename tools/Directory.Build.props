@@ -7,17 +7,18 @@
     <Copyright>Copyright 2022</Copyright>
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-	  <MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
-	  <NoWarn>$(NoWarn);NU1605</NoWarn>
+	<MinVerMinimumMajorMinor>1.0</MinVerMinimumMajorMinor>
+	<MinVerTagPrefix>v</MinVerTagPrefix>
+	<NoWarn>$(NoWarn);NU1605</NoWarn>
     <PackageLicenseFile></PackageLicenseFile>
-		<PackageProjectUrl>https://github.com/fabrimaciel/webprintmanager</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/fabrimaciel/webprintmanager</RepositoryUrl>
-		<NeutralLanguage>English</NeutralLanguage>
+	<PackageProjectUrl>https://github.com/fabrimaciel/webprintmanager</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/fabrimaciel/webprintmanager</RepositoryUrl>
+	<NeutralLanguage>English</NeutralLanguage>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
   
   <ItemGroup>
-	  <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.1">
+	<PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
