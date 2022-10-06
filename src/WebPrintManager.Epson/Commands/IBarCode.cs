@@ -2,8 +2,26 @@
 {
     internal interface IBarCode
     {
-        byte[] Code128(string code, Positions printString);
-        byte[] Code39(string code, Positions printString);
-        byte[] Ean13(string code, Positions printString);
+        byte[] Code128(
+            string text,
+            Positions positions,
+            BarWidth width,
+            int height,
+            bool useFontB,
+            BarcodeCode code);
+
+        byte[] Code39(
+            string text,
+            Positions positions,
+            BarWidth width,
+            int height,
+            bool useFontB);
+
+        byte[] Ean13(
+            string text,
+            Positions positions,
+            BarWidth width,
+            int height,
+            bool useFontB);
     }
 }

@@ -192,8 +192,16 @@ namespace WebPrintManager.Epson
             this.Append("This is second line with line height of 24 dots");
             this.Append("This is third line with line height of 40 dots");
             this.NewLines(3);
+            this.Code128("12345", Positions.AbovBarcode);
+            this.NewLines(3);
+            this.Code39("123456", Positions.AbovBarcode);
+            this.NewLines(3);
+            this.Ean13("1234567890122", Positions.AbovBarcode);
+            this.NewLines(3);
+
             this.Append("End of Test :)");
             this.Separator();
+
             await outputStream.WriteAsync(this.buffer, 0, this.buffer.Length, cancellationToken);
         }
 
@@ -297,19 +305,34 @@ namespace WebPrintManager.Epson
             this.Append(this.command.QrCode.Print(qrData, qrCodeSize));
         }
 
-        public void Code128(string code, Positions positions)
+        public void Code128(string text, Positions positions)
         {
-            this.Append(this.command.BarCode.Code128(code, positions));
+            this.Append(this.command.BarCode.Code128(text, positions, BarWidth.Thinnest, 50, true, BarcodeCode.CodeB));
         }
 
-        public void Code39(string code, Positions positions)
+        public void Code128(string text, Positions positions, BarWidth width, int height, bool useFontB, BarcodeCode code)
         {
-            this.Append(this.command.BarCode.Code39(code, positions));
+            this.Append(this.command.BarCode.Code128(text, positions, width, height, useFontB, code));
         }
 
-        public void Ean13(string code, Positions positions)
+        public void Code39(string text, Positions positions)
         {
-            this.Append(this.command.BarCode.Ean13(code, positions));
+            this.Append(this.command.BarCode.Code39(text, positions, BarWidth.Thinnest, 50, false));
+        }
+
+        public void Code39(string text, Positions positions, BarWidth width, int height, bool useFontB)
+        {
+            this.Append(this.command.BarCode.Code39(text, positions, width, height, useFontB));
+        }
+
+        public void Ean13(string text, Positions positions)
+        {
+            this.Append(this.command.BarCode.Ean13(text, positions, BarWidth.Thinnest, 50, false));
+        }
+
+        public void Ean13(string text, Positions positions, BarWidth width, int height, bool useFontB)
+        {
+            this.Append(this.command.BarCode.Ean13(text, positions, width, height, useFontB));
         }
 
         public Task InitializePrint(System.IO.Stream outputStream, CancellationToken cancellationToken)

@@ -78,11 +78,17 @@ namespace WebPrintManager.Epson
 
         void QrCode(string qrData, QrCodeSize qrCodeSize);
 
-        void Code128(string code, Positions positions);
+        void Code128(string text, Positions positions);
 
-        void Code39(string code, Positions positions);
+        void Code128(string text, Positions positions, BarWidth width, int height, bool useFontB, BarcodeCode code);
 
-        void Ean13(string code, Positions positions);
+        void Code39(string text, Positions positions);
+
+        void Code39(string text, Positions positions, BarWidth width, int height, bool useFontB);
+
+        void Ean13(string text, Positions positions);
+
+        void Ean13(string text, Positions positions, BarWidth width, int height, bool useFontB);
 
         Task InitializePrint(System.IO.Stream outputStream, CancellationToken cancellationToken);
     }
